@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "48106889777",
+    "project_id": "sunuproxi",
+    "storage_bucket": "sunuproxi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:48106889777:android:d59f5560dcab1b6b712b10",
+        "android_client_info": {
+          "package_name": "com.example.sunu_proxy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsQ74bUt4x-kWyxVL_F2d2ozJNMT3pSEs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
