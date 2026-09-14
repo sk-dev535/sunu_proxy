@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'merchant_dashboard_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -16,12 +17,27 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _signup() async {
     setState(() => _isLoading = true);
     try {
+      // 1. Création du compte
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      // 2. Connexion automatique immédiate pour s'assurer que la session est active
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
       if (!mounted) return;
-      Navigator.pop(context);
+
+      // 3. Redirection agressive vers le tableau de bord en effaçant tout l'historique
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const MerchantDashboardScreen()),
+        (route) => false,
+      );
+      
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

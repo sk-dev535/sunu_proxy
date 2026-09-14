@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'signup_screen.dart';
+import 'merchant_dashboard_screen.dart'; // <-- On importe le tableau de bord
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,6 +22,15 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      if (!mounted) return;
+
+      // Redirection vers le tableau de bord après connexion
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MerchantDashboardScreen()),
+      );
+
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
