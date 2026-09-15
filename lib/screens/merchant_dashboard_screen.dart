@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_merchant_screen.dart';
+import 'edit_merchant_screen.dart';
+import 'merchant_detail_screen.dart';
 
 class MerchantDashboardScreen extends StatelessWidget {
   const MerchantDashboardScreen({super.key});
@@ -98,32 +100,71 @@ class MerchantDashboardScreen extends StatelessWidget {
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 elevation: 3,
-                child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Colors.teal,
-                    child: Icon(Icons.store, color: Colors.white),
-                  ),
-                  title: Text(
-                    data['merchantName'] ?? 'Sans nom',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    '${data['category'] ?? 'Catégorie'} • ${data['quartier'] ?? 'Quartier'}',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
                     children: [
-                      // Bouton Modifier
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () {
-                          // TODO: Logique de modification à implémenter
-                        },
+                      const CircleAvatar(
+                        backgroundColor: Colors.teal,
+                        child: Icon(Icons.store, color: Colors.white),
                       ),
-                      // Bouton Supprimer
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteMerchant(context, docId),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              data['merchantName'] ?? 'Sans nom',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${data['category'] ?? 'Catégorie'} • ${data['quartier'] ?? 'Quartier'}',
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Bouton "Voir" (icône œil) pour ouvrir la fiche détail et voir Appel / WhatsApp
+                          IconButton(
+                            icon: const Icon(Icons.visibility, color: Colors.teal),
+                            tooltip: 'Voir les détails',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MerchantDetailScreen(merchantData: data),
+                                ),
+                              );
+                            },
+                          ),
+                          // Bouton Modifier
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditMerchantScreen(
+                                    docId: docId,
+                                    initialData: data,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          // Bouton Supprimer
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteMerchant(context, docId),
+                          ),
+                        ],
                       ),
                     ],
                   ),
