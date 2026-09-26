@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'visitor_home_screen.dart';
+import 'login_screen.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -46,13 +47,14 @@ class RoleSelectionScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO : remplacer par l'écran de connexion Commerçant
-                    // une fois le travail du binôme fusionné
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Écran Commerçant à venir")),
-                    );
-                  },
+                    onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
                   icon: const Icon(Icons.store),
                   label: const Text("Je suis un Commerçant"),
                   style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
