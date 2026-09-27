@@ -31,7 +31,7 @@ class MerchantDashboardScreen extends StatelessWidget {
 
     if (confirm == true) {
       try {
-        await FirebaseFirestore.instance.collection('merchants').doc(docId).delete();
+        await FirebaseFirestore.instance.collection('commerces').doc(docId).delete();
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Commerce supprimé avec succès')),
@@ -65,10 +65,9 @@ class MerchantDashboardScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // Récupérer uniquement les commerces appartenant à l'utilisateur connecté
         stream: FirebaseFirestore.instance
-            .collection('merchants')
-            .where('ownerId', isEqualTo: user?.uid)
+            .collection('commerces')
+            .where('idCommercant', isEqualTo: user?.uid)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -114,7 +113,7 @@ class MerchantDashboardScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              data['merchantName'] ?? 'Sans nom',
+                              data['nom'] ?? 'Sans nom',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -122,7 +121,7 @@ class MerchantDashboardScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${data['category'] ?? 'Catégorie'} • ${data['quartier'] ?? 'Quartier'}',
+                              data['categorie'] ?? 'Catégorie',
                               style: const TextStyle(color: Colors.grey),
                             ),
                           ],
@@ -131,7 +130,6 @@ class MerchantDashboardScreen extends StatelessWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Bouton "Voir" (icône œil) pour ouvrir la fiche détail et voir Appel / WhatsApp
                           IconButton(
                             icon: const Icon(Icons.visibility, color: Colors.teal),
                             tooltip: 'Voir les détails',
@@ -144,7 +142,6 @@ class MerchantDashboardScreen extends StatelessWidget {
                               );
                             },
                           ),
-                          // Bouton Modifier
                           IconButton(
                             icon: const Icon(Icons.edit, color: Colors.blue),
                             onPressed: () {
@@ -159,7 +156,6 @@ class MerchantDashboardScreen extends StatelessWidget {
                               );
                             },
                           ),
-                          // Bouton Supprimer
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _deleteMerchant(context, docId),

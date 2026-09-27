@@ -22,19 +22,16 @@ class _EditMerchantScreenState extends State<EditMerchantScreen> {
   late final TextEditingController _categoryController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _phoneController;
-  late final TextEditingController _quartierController;
 
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    // Pré-remplir les contrôleurs avec les données existantes du commerce
-    _nameController = TextEditingController(text: widget.initialData['merchantName'] ?? '');
-    _categoryController = TextEditingController(text: widget.initialData['category'] ?? '');
+    _nameController = TextEditingController(text: widget.initialData['nom'] ?? '');
+    _categoryController = TextEditingController(text: widget.initialData['categorie'] ?? '');
     _descriptionController = TextEditingController(text: widget.initialData['description'] ?? '');
-    _phoneController = TextEditingController(text: widget.initialData['phone'] ?? '');
-    _quartierController = TextEditingController(text: widget.initialData['quartier'] ?? '');
+    _phoneController = TextEditingController(text: widget.initialData['telephone'] ?? '');
   }
 
   Future<void> _updateMerchantData() async {
@@ -42,12 +39,11 @@ class _EditMerchantScreenState extends State<EditMerchantScreen> {
       setState(() => _isLoading = true);
 
       try {
-        await FirebaseFirestore.instance.collection('merchants').doc(widget.docId).update({
-          'merchantName': _nameController.text.trim(),
-          'category': _categoryController.text.trim(),
+        await FirebaseFirestore.instance.collection('commerces').doc(widget.docId).update({
+          'nom': _nameController.text.trim(),
+          'categorie': _categoryController.text.trim(),
           'description': _descriptionController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'quartier': _quartierController.text.trim(),
+          'telephone': _phoneController.text.trim(),
         });
 
         if (!mounted) return;
@@ -59,7 +55,7 @@ class _EditMerchantScreenState extends State<EditMerchantScreen> {
           ),
         );
 
-        Navigator.pop(context); // Retour au tableau de bord
+        Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -79,7 +75,6 @@ class _EditMerchantScreenState extends State<EditMerchantScreen> {
     _categoryController.dispose();
     _descriptionController.dispose();
     _phoneController.dispose();
-    _quartierController.dispose();
     super.dispose();
   }
 
@@ -119,12 +114,6 @@ class _EditMerchantScreenState extends State<EditMerchantScreen> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(labelText: 'Téléphone', border: OutlineInputBorder()),
-                validator: (value) => value == null || value.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _quartierController,
-                decoration: const InputDecoration(labelText: 'Quartier', border: OutlineInputBorder()),
                 validator: (value) => value == null || value.isEmpty ? 'Champ requis' : null,
               ),
               const SizedBox(height: 24),

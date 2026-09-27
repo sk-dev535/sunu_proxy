@@ -9,7 +9,6 @@ class MerchantDetailScreen extends StatelessWidget {
     required this.merchantData,
   });
 
-  // Fonction pour lancer un appel téléphonique
   Future<void> _makePhoneCall(String phoneNumber, BuildContext context) async {
     final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
     try {
@@ -26,9 +25,12 @@ class MerchantDetailScreen extends StatelessWidget {
     }
   }
 
-  // Fonction pour lancer WhatsApp
   Future<void> _openWhatsApp(String phoneNumber, BuildContext context) async {
-    final Uri whatsappUri = Uri.parse('https://wa.me/$phoneNumber');
+    String numero = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+    if (!numero.startsWith('221')) {
+      numero = '221$numero';
+    }
+    final Uri whatsappUri = Uri.parse('https://wa.me/$numero');
     try {
       if (await canLaunchUrl(whatsappUri)) {
         await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
@@ -45,11 +47,11 @@ class MerchantDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final phone = merchantData['phone'] ?? '';
+    final phone = merchantData['telephone'] ?? '';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(merchantData['merchantName'] ?? 'Détails du commerce'),
+        title: Text(merchantData['nom'] ?? 'Détails du commerce'),
         backgroundColor: Colors.teal,
       ),
       body: SingleChildScrollView(
@@ -67,14 +69,12 @@ class MerchantDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Center(
               child: Text(
-                merchantData['merchantName'] ?? 'Nom non disponible',
+                merchantData['nom'] ?? 'Nom non disponible',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(height: 24),
-
-            // Carte des informations
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -83,9 +83,7 @@ class MerchantDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildInfoRow(Icons.category, 'Catégorie', merchantData['category']),
-                    const Divider(height: 24),
-                    _buildInfoRow(Icons.location_on, 'Quartier', merchantData['quartier']),
+                    _buildInfoRow(Icons.category, 'Catégorie', merchantData['categorie']),
                     const Divider(height: 24),
                     _buildInfoRow(Icons.phone, 'Téléphone', phone),
                     const Divider(height: 24),
@@ -95,8 +93,6 @@ class MerchantDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Boutons de contact (Appel et WhatsApp)
             Row(
               children: [
                 Expanded(

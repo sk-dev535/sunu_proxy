@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 
 class AddMerchantScreen extends StatefulWidget {
   const AddMerchantScreen({super.key});
@@ -11,17 +12,28 @@ class AddMerchantScreen extends StatefulWidget {
 
 class _AddMerchantScreenState extends State<AddMerchantScreen> {
   final _formKey = GlobalKey<FormState>();
-  
-  // Contrôleurs pour récupérer les valeurs des champs de texte
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _quartierController = TextEditingController();
 
   bool _isLoading = false;
 
-  // Fonction pour enregistrer le commerce dans Firestore
+  Future<Position?> _getPosition() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return null;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return null;
+    }
+    if (permission == LocationPermission.deniedForever) return null;
+
+    return await Geolocator.getCurrentPosition();
+  }
+
   Future<void> _submitMerchantData() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -30,21 +42,21 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
 
       try {
         final user = FirebaseAuth.instance.currentUser;
-        
-        // Enregistrement des données dans la collection 'merchants' de Firestore
-        await FirebaseFirestore.instance.collection('merchants').add({
-          'merchantName': _nameController.text.trim(),
-          'category': _categoryController.text.trim(),
+        final position = await _getPosition();
+
+        await FirebaseFirestore.instance.collection('commerces').add({
+          'nom': _nameController.text.trim(),
+          'categorie': _categoryController.text.trim(),
           'description': _descriptionController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'quartier': _quartierController.text.trim(),
-          'ownerId': user?.uid ?? 'unknown', // ID du commerçant connecté
+          'telephone': _phoneController.text.trim(),
+          'latitude': position?.latitude ?? 0.0,
+          'longitude': position?.longitude ?? 0.0,
+          'idCommercant': user?.uid ?? 'unknown',
           'createdAt': Timestamp.now(),
         });
 
         if (!mounted) return;
 
-        // Afficher un message de succès
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Commerce ajouté avec succès !'),
@@ -52,13 +64,11 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
           ),
         );
 
-        // Vider le formulaire après l'enregistrement
         _formKey.currentState!.reset();
         _nameController.clear();
         _categoryController.clear();
         _descriptionController.clear();
         _phoneController.clear();
-        _quartierController.clear();
 
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,7 +93,6 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
     _categoryController.dispose();
     _descriptionController.dispose();
     _phoneController.dispose();
-    _quartierController.dispose();
     super.dispose();
   }
 
@@ -105,8 +114,6 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal),
               ),
               const SizedBox(height: 16),
-              
-              // Nom du commerce
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -122,8 +129,6 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
                 },
               ),
               const SizedBox(height: 12),
-
-              // Catégorie
               TextFormField(
                 controller: _categoryController,
                 decoration: const InputDecoration(
@@ -139,8 +144,6 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
                 },
               ),
               const SizedBox(height: 12),
-
-              // Description
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
@@ -157,8 +160,6 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
                 },
               ),
               const SizedBox(height: 12),
-
-              // Téléphone
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
@@ -174,26 +175,12 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
-
-              // Quartier
-              TextFormField(
-                controller: _quartierController,
-                decoration: const InputDecoration(
-                  labelText: 'Quartier (ex: Diamaguene, Saint-Louis...)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.location_on),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez indiquer le quartier';
-                  }
-                  return null;
-                },
+              const SizedBox(height: 8),
+              const Text(
+                "Votre position actuelle sera enregistrée automatiquement comme emplacement du commerce.",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 24),
-
-              // Bouton de validation
               SizedBox(
                 height: 50,
                 child: ElevatedButton(
