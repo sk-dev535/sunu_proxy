@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_merchant_screen.dart';
 import 'edit_merchant_screen.dart';
-import 'merchant_detail_screen.dart';
+import 'commerce_detail_screen.dart';
+import '../models/commerce.dart';
 
 class MerchantDashboardScreen extends StatelessWidget {
   const MerchantDashboardScreen({super.key});
@@ -134,10 +135,11 @@ class MerchantDashboardScreen extends StatelessWidget {
                             icon: const Icon(Icons.visibility, color: Colors.teal),
                             tooltip: 'Voir les détails',
                             onPressed: () {
+                              final commerce = Commerce.fromFirestore(docId, data);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => MerchantDetailScreen(merchantData: data),
+                                  builder: (context) => CommerceDetailScreen(commerce: commerce),
                                 ),
                               );
                             },
