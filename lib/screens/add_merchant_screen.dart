@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
+import '../widgets/form_style.dart';
+import '../widgets/time_field.dart';
 
 class AddMerchantScreen extends StatefulWidget {
   const AddMerchantScreen({super.key});
@@ -14,9 +16,11 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _openController = TextEditingController();
+  final TextEditingController _closeController = TextEditingController();
+  String? _categorie;
 
   bool _isLoading = false;
 
@@ -46,9 +50,11 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
 
         await FirebaseFirestore.instance.collection('commerces').add({
           'nom': _nameController.text.trim(),
-          'categorie': _categoryController.text.trim(),
+          'categorie': _categorie,
           'description': _descriptionController.text.trim(),
           'telephone': _phoneController.text.trim(),
+          'heureOuverture': _openController.text,
+          'heureFermeture': _closeController.text,
           'latitude': position?.latitude ?? 0.0,
           'longitude': position?.longitude ?? 0.0,
           'idCommercant': user?.uid ?? 'unknown',
@@ -63,14 +69,9 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
             backgroundColor: Colors.green,
           ),
         );
-
-        _formKey.currentState!.reset();
-        _nameController.clear();
-        _categoryController.clear();
-        _descriptionController.clear();
-        _phoneController.clear();
-
+        Navigator.pop(context);
       } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur lors de l\'ajout : $e'),
@@ -90,113 +91,112 @@ class _AddMerchantScreenState extends State<AddMerchantScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _categoryController.dispose();
     _descriptionController.dispose();
     _phoneController.dispose();
+    _openController.dispose();
+    _closeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F0),
       appBar: AppBar(
-        title: const Text('Ajouter / Gérer mon Commerce'),
-        backgroundColor: Colors.teal,
+        title: const Text('Créer mon profil commerçant'),
+        backgroundColor: const Color(0xFFF5F5F0),
+        foregroundColor: const Color(0xFF0F4D3A),
+        elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              const Text(
-                'Informations de votre boutique',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal),
+              const SizedBox(height: 8),
+              const Center(
+                child: CircleAvatar(
+                  radius: 44,
+                  backgroundColor: vertPrincipal,
+                  child: Icon(Icons.storefront, size: 44, color: Colors.white),
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom du commerce',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.store),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer le nom du commerce';
-                  }
-                  return null;
-                },
+                decoration: champ('Nom du commerce', Icons.store),
+                validator: (value) => (value == null || value.isEmpty)
+                    ? 'Veuillez entrer le nom du commerce'
+                    : null,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _categoryController,
-                decoration: const InputDecoration(
-                  labelText: 'Catégorie (ex: Alimentation, Mode, Services)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.category),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer une catégorie';
-                  }
-                  return null;
-                },
+              DropdownButtonFormField<String>(
+                initialValue: _categorie,
+                decoration: champ('Catégorie', Icons.category),
+                items: categoriesCommerce
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
+                onChanged: (v) => _categorie = v,
+                validator: (v) =>
+                    v == null ? 'Veuillez choisir une catégorie' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Description des services ou produits',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.description),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer une description';
-                  }
-                  return null;
-                },
+                decoration: champ('Description', Icons.description),
+                validator: (value) => (value == null || value.isEmpty)
+                    ? 'Veuillez entrer une description'
+                    : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Numéro de téléphone',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.phone),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer un numéro de téléphone';
-                  }
-                  return null;
-                },
+                decoration: champ('Contact (téléphone / WhatsApp)', Icons.phone),
+                validator: (value) => (value == null || value.isEmpty)
+                    ? 'Veuillez entrer un numéro de téléphone'
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                      child: TimeField(
+                          controller: _openController, label: 'Ouverture')),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child: TimeField(
+                          controller: _closeController, label: 'Fermeture')),
+                ],
               ),
               const SizedBox(height: 8),
               const Text(
                 "Votre position actuelle sera enregistrée automatiquement comme emplacement du commerce.",
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               SizedBox(
-                height: 50,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitMerchantData,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
+                    backgroundColor: vertPrincipal,
                     foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          'Enregistrer le commerce',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          'Créer mon profil',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
