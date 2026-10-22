@@ -1,3 +1,14 @@
+ Voici le code complet et nettoyé pour le fichier `visitor_home_screen.dart`.
+
+### Ce qui a été mis à jour dans le code :
+
+1. **Correction des erreurs de syntaxe** (les tirets isolés `-` et retours à la ligne cassés dans les chaînes de texte de `_carteCommerce` ont été corrigés).
+2. **Logique de la catégorie "Autres"** : Lorsqu'un visiteur clique sur le bouton **"Autres"**, l'application filtre et regroupe dynamiquement tous les commerces dont la catégorie ne fait pas partie des 5 catégories principales (*Alimentation, Couture, Coiffure, Réparation, Beauté*). Ainsi, les pharmacies, librairies, quincailleries, etc. s'afficheront sous "Autres".
+3. **Mots-clés pour la recherche textuelle** : Ajout de mots-clés spécifiques dans `_besoins` pour la catégorie **"Autres"** (*pharmacie, médicament, santé, librairie, livre, papeterie, quincaillerie, etc.*) pour que la barre de recherche textuelle fonctionne avec ces métiers.
+
+Tu peux tout sélectionner et remplacer l'intégralité du contenu de `visitor_home_screen.dart` par ce bloc :
+
+```dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
@@ -57,6 +68,11 @@ const Map<String, List<String>> _besoins = {
     'beaute', 'maquillage', 'ongles', 'manucure', 'massage', 'soin',
     'parfum', 'esthetique', 'epilation', 'henne', 'cosmetique',
   ],
+  'Autres': [
+    'pharmacie', 'medicament', 'sante', 'ordonnance', 'pharmacien',
+    'librairie', 'livre', 'papeterie', 'cahier', 'stylo',
+    'quincaillerie', 'bricolage', 'outillage', 'peinture',
+  ],
 };
 
 // Mots qu'on ignore dans une phrase de recherche
@@ -104,9 +120,11 @@ Set<String> _categoriesVisees(List<String> mots) {
 _Categorie _categorieDe(Commerce c) {
   final cat = _norm(c.categorie);
   for (final k in _categories) {
-    if (k.motsCles.any((m) => cat.contains(m))) return k;
+    if (k.nom != 'Autres' && k.motsCles.any((m) => cat.contains(m))) {
+      return k;
+    }
   }
-  return _categories.last;
+  return _categories.last; // Renvoie 'Autres' si aucune correspondance principale
 }
 
 class VisitorHomeScreen extends StatefulWidget {
@@ -375,8 +393,19 @@ class _VisitorHomeScreenState extends State<VisitorHomeScreen> {
                 doc.id, doc.data() as Map<String, dynamic>))
             .where((c) {
           final matchTexte = _correspond(c, mots, visees);
-          final matchCategorie = _categorieSelectionnee == null ||
-              _categorieDe(c).nom == _categorieSelectionnee;
+          
+          // Filtrage par catégorie dynamique
+          bool matchCategorie = true;
+          if (_categorieSelectionnee != null) {
+            if (_categorieSelectionnee == 'Autres') {
+              // Si "Autres" est cliqué, affiche tout ce qui n'appartient PAS
+              // aux 5 catégories principales
+              matchCategorie = _categorieDe(c).nom == 'Autres';
+            } else {
+              matchCategorie = _categorieDe(c).nom == _categorieSelectionnee;
+            }
+          }
+
           final matchOuvert = !veutOuvert || c.estOuvert == true;
           return matchTexte && matchCategorie && matchOuvert;
         }).toList();
@@ -511,3 +540,4 @@ class _NoteMoyenne extends StatelessWidget {
     );
   }
 }
+
