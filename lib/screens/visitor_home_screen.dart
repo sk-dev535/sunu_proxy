@@ -1,14 +1,3 @@
- Voici le code complet et nettoyé pour le fichier `visitor_home_screen.dart`.
-
-### Ce qui a été mis à jour dans le code :
-
-1. **Correction des erreurs de syntaxe** (les tirets isolés `-` et retours à la ligne cassés dans les chaînes de texte de `_carteCommerce` ont été corrigés).
-2. **Logique de la catégorie "Autres"** : Lorsqu'un visiteur clique sur le bouton **"Autres"**, l'application filtre et regroupe dynamiquement tous les commerces dont la catégorie ne fait pas partie des 5 catégories principales (*Alimentation, Couture, Coiffure, Réparation, Beauté*). Ainsi, les pharmacies, librairies, quincailleries, etc. s'afficheront sous "Autres".
-3. **Mots-clés pour la recherche textuelle** : Ajout de mots-clés spécifiques dans `_besoins` pour la catégorie **"Autres"** (*pharmacie, médicament, santé, librairie, livre, papeterie, quincaillerie, etc.*) pour que la barre de recherche textuelle fonctionne avec ces métiers.
-
-Tu peux tout sélectionner et remplacer l'intégralité du contenu de `visitor_home_screen.dart` par ce bloc :
-
-```dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
@@ -40,7 +29,6 @@ const List<_Categorie> _categories = [
   _Categorie('Autres', Icons.grid_view, []),
 ];
 
-// Recherche par besoin : ce que le visiteur tape -> catégorie concernée
 const Map<String, List<String>> _besoins = {
   'Alimentation': [
     'alimentation', 'gateau', 'anniversaire', 'boulangerie', 'boulanger',
@@ -75,7 +63,6 @@ const Map<String, List<String>> _besoins = {
   ],
 };
 
-// Mots qu'on ignore dans une phrase de recherche
 const Set<String> _motsVides = {
   'cherche', 'chercher', 'pour', 'avec', 'dans', 'mon', 'mes', 'une', 'des',
   'les', 'aux', 'pres', 'proche', 'besoin', 'voudrais', 'veux', 'trouver',
@@ -83,7 +70,6 @@ const Set<String> _motsVides = {
   'svp', 'plait', 'commerce', 'boutique',
 };
 
-// Minuscules + sans accents, pour comparer facilement
 String _norm(String s) {
   const from = 'àâäéèêëîïôöùûüç';
   const to = 'aaaeeeeiioouuuc';
@@ -94,7 +80,6 @@ String _norm(String s) {
   return r;
 }
 
-// Découpe une phrase en mots utiles
 List<String> _mots(String texte) {
   return _norm(texte)
       .split(RegExp(r'[^a-z0-9]+'))
@@ -102,7 +87,6 @@ List<String> _mots(String texte) {
       .toList();
 }
 
-// Catégories qui correspondent aux besoins exprimés
 Set<String> _categoriesVisees(List<String> mots) {
   final res = <String>{};
   _besoins.forEach((cat, cles) {
@@ -116,7 +100,6 @@ Set<String> _categoriesVisees(List<String> mots) {
   return res;
 }
 
-// Range un commerce dans l'une des 6 catégories
 _Categorie _categorieDe(Commerce c) {
   final cat = _norm(c.categorie);
   for (final k in _categories) {
@@ -124,7 +107,7 @@ _Categorie _categorieDe(Commerce c) {
       return k;
     }
   }
-  return _categories.last; // Renvoie 'Autres' si aucune correspondance principale
+  return _categories.last;
 }
 
 class VisitorHomeScreen extends StatefulWidget {
@@ -175,8 +158,6 @@ class _VisitorHomeScreenState extends State<VisitorHomeScreen> {
         : '${(m / 1000).toStringAsFixed(1).replaceAll('.', ',')} km';
   }
 
-  // Un commerce correspond si un mot apparaît dans son texte,
-  // ou si le besoin exprimé concerne sa catégorie
   bool _correspond(Commerce c, List<String> mots, Set<String> categoriesVisees) {
     if (mots.isEmpty) return true;
     final texte = _norm('${c.nom} ${c.description} ${c.categorie}');
@@ -394,12 +375,9 @@ class _VisitorHomeScreenState extends State<VisitorHomeScreen> {
             .where((c) {
           final matchTexte = _correspond(c, mots, visees);
           
-          // Filtrage par catégorie dynamique
           bool matchCategorie = true;
           if (_categorieSelectionnee != null) {
             if (_categorieSelectionnee == 'Autres') {
-              // Si "Autres" est cliqué, affiche tout ce qui n'appartient PAS
-              // aux 5 catégories principales
               matchCategorie = _categorieDe(c).nom == 'Autres';
             } else {
               matchCategorie = _categorieDe(c).nom == _categorieSelectionnee;
@@ -505,7 +483,6 @@ class _VisitorHomeScreenState extends State<VisitorHomeScreen> {
   }
 }
 
-// Petite note moyenne affichée dans chaque carte (lit les avis du commerce)
 class _NoteMoyenne extends StatelessWidget {
   final String commerceId;
   const _NoteMoyenne({required this.commerceId});
@@ -540,4 +517,3 @@ class _NoteMoyenne extends StatelessWidget {
     );
   }
 }
-
