@@ -27,7 +27,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
 
 flutter_launcher_icons:
-  image_path: "assets/logo_app.png"
+  image_path: "assets/logo-proxy.png.jpg"
   android: true
   ios: true
 
