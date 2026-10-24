@@ -8,7 +8,7 @@
         </intent>
     </queries>
     <application
-        android:label="sunu_proxy"
+        android:label="SunuProxi"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
