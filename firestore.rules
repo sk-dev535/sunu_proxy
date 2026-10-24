@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /commerces/{commerceId} {
+
+      allow read: if true;
+
+      allow create: if request.auth != null
+                    && request.resource.data.idCommercant == request.auth.uid;
+
+      allow update: if request.auth != null
+                    && resource.data.idCommercant == request.auth.uid
+                    && request.resource.data.idCommercant == resource.data.idCommercant;
+      allow delete: if request.auth != null
+                    && resource.data.idCommercant == request.auth.uid;
+
+      match /avis/{avisId} {
+        allow read: if true;
+        allow create: if request.resource.data.note is int
+                      && request.resource.data.note >= 1
+                      && request.resource.data.note <= 5
+                      && request.resource.data.commentaire is string
+                      && request.resource.data.commentaire.size() <= 300;
+        allow update, delete: if false;
+      }
+    }
+  }
+}
